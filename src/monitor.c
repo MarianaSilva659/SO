@@ -13,6 +13,27 @@ struct Info { //se o programName for NULL então é final
     //timestamp;    
 };
 
+int indexLastChar (char *frase){
+    char **palavras = (char **) malloc(sizeof(char *) * 100);
+    char *token;
+    int index = 0;
+    token = strtok(frase, " ");
+    int i = 0;
+    
+    while (token != NULL && frase[index+1] != '\n' && frase[index+1] != '\0') {
+
+        palavras[i] = (char *) malloc(sizeof(char) * strlen(token));
+
+        strcpy(palavras[i], token);
+
+        token = strtok(NULL, " ");
+        
+        index += strlen(palavras[i]);
+        i++;
+    }
+    return index;
+}
+
 int main(int argc, char **argv){
     
     if (mkfifo("fifo",0666)==0)
