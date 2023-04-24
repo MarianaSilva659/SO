@@ -77,8 +77,8 @@ int main(int argc, char **argv){
                     return 2;
                 // mandar a informação para o server
                 printf("\nprogram name: %s|\n",inicial.programName);
+                
                 start_time_filho = clock();
-
                 write(pipe_time[1], &start_time_filho, sizeof(double));
                 close(pipe_time[1]);
 
@@ -97,8 +97,8 @@ int main(int argc, char **argv){
             read(pipe_time[0], &start_time_pai, sizeof(double));
             close(pipe_time[0]);
 
-            time_execute = ((end_time-start_time_pai) * 1000) / CLOCKS_PER_SEC;
-            printf("Enden in %lfms\n", time_execute);
+            time_execute = ((double)(end_time-start_time_pai) * 1000) / CLOCKS_PER_SEC;
+            printf("Enden in %fms\n", time_execute);
 //-----------------------------------------------------------------
 //--------------------Notificar servidor---------------------------
             
