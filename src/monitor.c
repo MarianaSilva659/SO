@@ -61,12 +61,17 @@ int main(int argc, char **argv){
             perror("open");
             return 3;
         }
+        lseek(log,0,SEEK_END);
+         write(log, "Start\n", 6);
 
         while ((bytes_read = read (fd_read, buffer, 512)) > 0){
             printf("%s \n", buffer);
             lseek(fd_read, -(bytes_read - indexLastChar(buffer, &info)), SEEK_CUR);
+                  if(strcmp(info.programName, "close_monitor") == 0){
+                  write(log, "Close\n", 6);
+                  break;
+                  }
             write (log, buffer,strlen(buffer));
-            if(strcmp(info.programName, "close_monitor") == 0) break;
             // write (log, &bytes_read,sizeof(int));
             //write (log, buf.programName,sizeof(char)*255);
         }

@@ -32,7 +32,7 @@ struct String *to_String(struct Info info)
 int main(int argc, char **argv){
    struct String *message;
     if (argc < 2){
-        return -1;
+        return 1;
     }
 
     if (strcmp(argv[1], "execute") == 0){
@@ -65,7 +65,7 @@ int main(int argc, char **argv){
 //--------------------Notificar servidor---------------------------
 
                 if((fd = open("fifo",O_WRONLY)) == -1)
-                    return -1;
+                    return 2;
                 // mandar a informação para o server
                 printf("\nprogram name: %s|\n",inicial.programName);
                 write (fd, message->content,sizeof(char) * message->lenght);
@@ -80,7 +80,7 @@ int main(int argc, char **argv){
 //--------------------Notificar servidor---------------------------
             
             if((fd = open("fifo",O_WRONLY)) == -1)
-                return -1;
+                return 3;
             
             // mandar a informação para o server
             struct Info final;
@@ -95,8 +95,7 @@ int main(int argc, char **argv){
 //preencher a estrutura EINFO e mandar a informação para o server
 //-----------------------------------------------------------------
 //--------------------Notificar cliente----------------------------
-                printf("ended\n");
-                exit(5);
+                exit(0);
 //-----------------------------------------------------------------
 
         }
