@@ -12,9 +12,25 @@ struct Info { //se o programName for NULL então é final
     //timestamp;    
 };
 
+struct String {
+    int lenght;
+    char *content;
+};
+
+struct String *to_String(struct Info info)
+{
+   struct String *result = malloc(sizeof(struct String));
+    result->lenght = snprintf(NULL, 0, "PID: %d NAME: %s \n", info.pid, info.programName) + 1;
+   result->content = malloc(result->lenght);
+   if(result->content == NULL) return NULL;
+   snprintf(result->content, result->lenght, "PID: %d NAME: %s \n", info.pid, info.programName);
+   return result;
+}
+
+
 
 int main(int argc, char **argv){
-    
+   struct String *message;
     if (argc < 2){
         return -1;
     }
@@ -39,10 +55,11 @@ int main(int argc, char **argv){
             pid_t a;
             if ( (a =fork()) == 0){
                 struct Info inicial;
-                inicial.pid = a;
+                inicial.pid = getpid();
                 inicial.programName = strdup(argv[3]);
 
                 printf("Running PID %d\n", inicial.pid);
+               message = to_String(inicial);
 
 //-----------------------------------------------------------------
 //--------------------Notificar servidor---------------------------
@@ -51,7 +68,7 @@ int main(int argc, char **argv){
                     return -1;
                 // mandar a informação para o server
                 printf("\nprogram name: %s|\n",inicial.programName);
-                write (fd, &inicial,sizeof(struct Info));
+                write (fd, message->content,sizeof(char) * message->lenght);
                 close (fd);
 
 //----------------------------------------------------------------
@@ -69,8 +86,10 @@ int main(int argc, char **argv){
             struct Info final;
             final.pid = a;
             
-            final.programName = NULL;
-            write (fd, &final,sizeof(struct Info));
+            final.programName = strdup("Ended");
+            message = to_String(final);
+
+            write (fd, message->content,sizeof(char) * message->lenght);
             close (fd);
 
 //preencher a estrutura EINFO e mandar a informação para o server
