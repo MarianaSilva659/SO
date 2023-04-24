@@ -99,7 +99,7 @@ int main(int argc, char **argv){
             close(pipe_time[0]);
 
             time_execute = ((double)(end_time-start_time_pai) * 1000) / CLOCKS_PER_SEC;
-            printf("Enden in %fms\n", time_execute);
+            printf("Ended in %fms\n", time_execute);
 //-----------------------------------------------------------------
 //--------------------Notificar servidor---------------------------
             
