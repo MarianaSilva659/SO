@@ -89,6 +89,7 @@ int main(int argc, char **argv){
 //----------------------------------------------------------------
 //--------------------fazer execute -u----------------------------
                 execvp(argv[3],buffer);
+                exit(0);
             }
             wait(0);
             end_time = clock();
