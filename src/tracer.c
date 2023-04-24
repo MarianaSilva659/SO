@@ -51,19 +51,19 @@ int main(int argc, char **argv){
             }
 
 //--------------------Notificar cliente----------------------------
-            int fd;
+              int fd;
             pid_t a;
             double time_execute;
             clock_t start_time_filho, start_time_pai, end_time;
-            int time_fd[2];
+            int pipe_time[2];
 
-            if(pipe(time_fd) == -1){
+            if(pipe(pipe_time) == -1){
                 perror("erroPipe");
                 exit(EXIT_FAILURE);
             }
 
             if((a = fork()) == 0){
-                close(time_fd[0]);
+                close(pipe_time[0]);
                 struct Info inicial;
                 inicial.pid = getpid();
                 inicial.programName = strdup(argv[3]);
@@ -79,8 +79,8 @@ int main(int argc, char **argv){
                 printf("\nprogram name: %s|\n",inicial.programName);
                 start_time_filho = clock();
 
-                write(time_fd[1], &start_time_filho, sizeof(double));
-                close(time_fd[1]);
+                write(pipe_time[1], &start_time_filho, sizeof(double));
+                close(pipe_time[1]);
 
                 message = to_String(inicial);
                 write (fd, message->content,sizeof(char) * message->lenght);
@@ -92,9 +92,11 @@ int main(int argc, char **argv){
             }
             wait(0);
             end_time = clock();
-            close(time_fd[1]);
-            read(time_fd[0], &start_time_pai, sizeof(double));
-            close(time_fd[0]);
+
+            close(pipe_time[1]);
+            read(pipe_time[0], &start_time_pai, sizeof(double));
+            close(pipe_time[0]);
+
             time_execute = ((end_time-start_time_pai) * 1000) / CLOCKS_PER_SEC;
             printf("Enden in %lfms\n", time_execute);
 //-----------------------------------------------------------------
