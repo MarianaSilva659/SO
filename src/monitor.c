@@ -65,7 +65,7 @@ int main(int argc, char **argv){
         while ((bytes_read = read (fd_read, buffer, 512)) > 0){
             printf("%s \n", buffer);
             lseek(fd_read, -(bytes_read - indexLastChar(buffer, &info)), SEEK_CUR);
-            write (log, buffer,strlen(buffer)+1);
+            write (log, buffer,strlen(buffer));
             if(strcmp(info.programName, "close_monitor") == 0) break;
             // write (log, &bytes_read,sizeof(int));
             //write (log, buf.programName,sizeof(char)*255);
