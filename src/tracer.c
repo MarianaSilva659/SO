@@ -4,7 +4,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/wait.h>
-
+#include <time.h>
 
 struct Info { //se o programName for NULL então é final
     int pid;
@@ -53,13 +53,22 @@ int main(int argc, char **argv){
 //--------------------Notificar cliente----------------------------
             int fd;
             pid_t a;
-            if ( (a =fork()) == 0){
+            double time_execute;
+            clock_t start_time_filho, start_time_pai, end_time;
+            int time_fd[2];
+
+            if(pipe(time_fd) == -1){
+                perror("erroPipe");
+                exit(EXIT_FAILURE);
+            }
+
+            if((a = fork()) == 0){
+                close(time_fd[0]);
                 struct Info inicial;
                 inicial.pid = getpid();
                 inicial.programName = strdup(argv[3]);
 
                 printf("Running PID %d\n", inicial.pid);
-               message = to_String(inicial);
 
 //-----------------------------------------------------------------
 //--------------------Notificar servidor---------------------------
@@ -68,6 +77,12 @@ int main(int argc, char **argv){
                     return 2;
                 // mandar a informação para o server
                 printf("\nprogram name: %s|\n",inicial.programName);
+                start_time_filho = clock();
+
+                write(time_fd[1], &start_time_filho, sizeof(double));
+                close(time_fd[1]);
+
+                message = to_String(inicial);
                 write (fd, message->content,sizeof(char) * message->lenght);
                 close (fd);
 
@@ -76,6 +91,12 @@ int main(int argc, char **argv){
                 execvp(argv[3],buffer);
             }
             wait(0);
+            end_time = clock();
+            close(time_fd[1]);
+            read(time_fd[0], &start_time_pai, sizeof(double));
+            close(time_fd[0]);
+            time_execute = ((end_time-start_time_pai) * 1000) / CLOCKS_PER_SEC;
+            printf("Enden in %lfms\n", time_execute);
 //-----------------------------------------------------------------
 //--------------------Notificar servidor---------------------------
             
