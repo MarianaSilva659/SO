@@ -24,7 +24,6 @@ int indexLastChar (char *message, struct Info *store){
     
     for (;(token != NULL) && (message_copy[index] != '\n') && (message_copy[index] != '\0') && (i < 100); i++) {
         size = strlen(token);
-        printf("%s \n", token);
           if(i == 1){
              store->pid = atoi(token);
           }
@@ -49,6 +48,7 @@ int main(int argc, char **argv){
     int fd_read, fd_write,bytes_read;
     struct Info info;
     char *buffer = calloc(512, sizeof(char));
+    info.programName = malloc(sizeof(char));
         if((fd_read = open("fifo",O_RDONLY)) == -1){
             perror("open");
             return 1;
