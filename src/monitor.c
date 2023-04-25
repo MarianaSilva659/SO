@@ -78,7 +78,7 @@ int main(int argc, char **argv){
             if(info.pedido == 'e'){
                 write (log, buffer,strlen(buffer));
             }
-            if(info.pedido == 's'){
+            else if(info.pedido == 's'){
                 write (log, buffer,strlen(buffer));
             }
         }
