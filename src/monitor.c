@@ -14,7 +14,7 @@ struct Info { //se o programName for NULL então é final
     //timestamp;    
 };
 
-int indexLastChar (char *message, struct Info *store){
+int Server_parser (char *message, struct Info *store){
     char *message_copy = strdup(message);
     char **palavras = (char **) malloc(sizeof(char *) * 100);
     char *token;
@@ -70,7 +70,7 @@ int main(int argc, char **argv){
 
         while ((bytes_read = read (fd_read, buffer, 512)) > 0){
             printf("%s \n", buffer);
-            lseek(fd_read, -(bytes_read - indexLastChar(buffer, &info)), SEEK_CUR);
+            lseek(fd_read, -(bytes_read - Server_parser(buffer, &info)), SEEK_CUR);
                   if(strcmp(info.programName, "close_monitor") == 0){
                     write(log, "Close\n", 6);
                     break;
