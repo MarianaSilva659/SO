@@ -28,10 +28,10 @@ int indexLastChar (char *message, struct Info *store){
           if(i == 0){
             store->pedido = token[0];
           }
-          if(i == 2){
+          else if(i == 2){
              store->pid = atoi(token);
           }
-          if(i == 4) {
+         else if(i == 4) {
             free(store->programName);
             store->programName = strdup(token);
           }
