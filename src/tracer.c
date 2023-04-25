@@ -142,7 +142,8 @@ int main(int argc, char **argv){
 //--------------------Notificar cliente----------------------------
                 exit(0);
 //-----------------------------------------------------------------
-
+            free(time_string);
+            free(time_ms);
         }
         printf("Usage->outras opçoes do execute:not done yet\n");
         return 0;
