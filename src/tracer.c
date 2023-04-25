@@ -192,10 +192,10 @@ int main(int argc, char **argv){
             close (fd);
             //esperar pelo servidor e fazer print de tudo o que receber do fifo no strout
 
-            //no servidor
             free(time_string);
             free(time_ms);
             unlink(info.programName);
+            //no servidor
             //percorrer os logs e procurar aqueles que até ao momento pedido, não tinham acabado e fazer print deles no fifo recebido
     }else{
         printf("Usage:not done yet\n");
