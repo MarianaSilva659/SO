@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 
 struct Info { //se o programName for NULL então é final
+    char pedido;
     int pid;
     char* programName;//buffer[0]
     //timestamp;    
@@ -24,10 +25,13 @@ int indexLastChar (char *message, struct Info *store){
     
     for (;(token != NULL) && (message_copy[index] != '\n') && (message_copy[index] != '\0') && (i < 100); i++) {
         size = strlen(token);
-          if(i == 1){
+          if(i == 0){
+            store->pedido = token[0];
+          }
+          if(i == 2){
              store->pid = atoi(token);
           }
-          if(i == 3) {
+          if(i == 4) {
             free(store->programName);
             store->programName = strdup(token);
           }
@@ -68,12 +72,15 @@ int main(int argc, char **argv){
             printf("%s \n", buffer);
             lseek(fd_read, -(bytes_read - indexLastChar(buffer, &info)), SEEK_CUR);
                   if(strcmp(info.programName, "close_monitor") == 0){
-                  write(log, "Close\n", 6);
-                  break;
+                    write(log, "Close\n", 6);
+                    break;
                   }
-            write (log, buffer,strlen(buffer));
-            // write (log, &bytes_read,sizeof(int));
-            //write (log, buf.programName,sizeof(char)*255);
+            if(info.pedido == 'e'){
+                write (log, buffer,strlen(buffer));
+            }
+            if(info.pedido == 's'){
+                write (log, buffer,strlen(buffer));
+            }
         }
         close (fd_read);
         close(fd_write);

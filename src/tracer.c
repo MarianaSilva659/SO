@@ -6,8 +6,11 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 struct Info { //se o programName for NULL então é final
+    char pedido;
     int pid;
     char* programName;//buffer[0]
     //timestamp;    
@@ -21,10 +24,10 @@ struct String {
 struct String *to_String(struct Info info, char *time_string)
 {
    struct String *result = malloc(sizeof(struct String));
-    result->lenght = snprintf(NULL, 0, "PID: %d NAME: %s TIME: %s \n", info.pid, info.programName, time_string) + 1;
+    result->lenght = snprintf(NULL, 0, "%c PID: %d NAME: %s TIME: %s \n", info.pedido ,info.pid, info.programName, time_string) + 1;
    result->content = malloc(result->lenght);
    if(result->content == NULL) return NULL;
-   snprintf(result->content, result->lenght, "PID: %d NAME: %s TIME: %s \n", info.pid, info.programName, time_string);
+   snprintf(result->content, result->lenght, "%c PID: %d NAME: %s TIME: %s \n", info.pedido ,info.pid, info.programName, time_string);
    return result;
 }
 
@@ -70,6 +73,7 @@ int main(int argc, char **argv){
             if((a = fork()) == 0){
  
                 struct Info inicial;
+                inicial.pedido = 'e';
                 inicial.pid = getpid();
                 inicial.programName = strdup(argv[3]);
 
@@ -130,6 +134,7 @@ int main(int argc, char **argv){
             // mandar a informação para o server
             struct Info final;
             final.pid = a;
+            final.pedido = 'e';
             
             final.programName = strdup("Ended");
             message = to_String(final, time_string);
@@ -147,8 +152,52 @@ int main(int argc, char **argv){
         }
         printf("Usage->outras opçoes do execute:not done yet\n");
         return 0;
-    }
-    else{
+    }else 
+//-----------------------------------------------------------------
+        if(strcmp(argv[1], "status") == 0){
+            //criar o fifo
+            struct Info info;
+            info.pid = getpid();
+            int tamanho = snprintf(NULL, 0, "fifo_%d", info.pid) + 1;
+            info.programName = malloc(tamanho);
+            if(info.programName == NULL) return -1;
+            snprintf(info.programName, tamanho, "fifo_%d", info.pid);
+            if (mkfifo(info.programName,0666)==0)
+                perror("mkfifo"); 
+            info.pedido = 's';
+
+            //mandar para o servidor o fifo e o tempo a que foi pedido
+            struct timeval current_time;
+            int fd;
+            int time_execute;
+            struct tm *nowtm;
+            char *time_string = (char*)malloc(sizeof(char)* 32);
+            char *time_ms = (char*)malloc(sizeof(char) * 8);
+            
+            if((fd = open("fifo",O_WRONLY)) == -1)
+                    return 2;
+                // mandar a informação para o server
+                
+            gettimeofday(&current_time, NULL);
+            time_t nowtime = current_time.tv_sec;
+            nowtm = localtime(&nowtime);
+
+            strftime(time_string, 32, "%Y-%m-%d %H:%M:%S", nowtm); 
+            sprintf(time_ms, ".%ld", current_time.tv_usec);
+            strcat(time_string, time_ms);
+
+            struct String *message;
+            message = to_String(info, time_string);
+            write (fd, message->content,sizeof(char) * message->lenght);
+            close (fd);
+            //esperar pelo servidor e fazer print de tudo o que receber do fifo no strout
+
+            //no servidor
+            free(time_string);
+            free(time_ms);
+            unlink(info.programName);
+            //percorrer os logs e procurar aqueles que até ao momento pedido, não tinham acabado e fazer print deles no fifo recebido
+    }else{
         printf("Usage:not done yet\n");
         return 0;
     }
