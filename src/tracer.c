@@ -57,7 +57,7 @@ int main(int argc, char **argv){
 //--------------------Notificar cliente----------------------------
             int fd;
             pid_t a;
-            int time_execute;
+            double time_execute;
             int pipe_time[2];
             struct timeval current_time_filho;
             struct timeval current_time_pai;
@@ -92,7 +92,7 @@ int main(int argc, char **argv){
                         nowtm = localtime(&nowtime);
 
                         strftime(time_string, 32, "%Y-%m-%d %H:%M:%S", nowtm); 
-                        sprintf(time_ms, ".%ld", current_time_filho.tv_usec);
+                        sprintf(time_ms, ".%ld", (current_time_filho.tv_usec/1000));
                         strcat(time_string, time_ms);
 
                         close(pipe_time[0]);
@@ -115,7 +115,7 @@ int main(int argc, char **argv){
                         nowtm = localtime(&nowtime);
 
                         strftime(time_string, 32,"%Y-%m-%d %H:%M:%S", nowtm);
-                        sprintf(time_ms, ".%ld", current_time_pai.tv_usec);
+                        sprintf(time_ms, ".%ld", (current_time_pai.tv_usec/1000));
                         strcat(time_string, time_ms);
 
 
@@ -124,7 +124,7 @@ int main(int argc, char **argv){
                         close(pipe_time[0]);
 
                         time_execute = current_time_pai.tv_usec - current_time_filho.tv_usec;
-            printf("Ended in %dms\n", time_execute);
+            printf("Ended in %fms\n", (time_execute /1000));
 //-----------------------------------------------------------------
 //--------------------Notificar servidor---------------------------
             
@@ -183,7 +183,7 @@ int main(int argc, char **argv){
             nowtm = localtime(&nowtime);
 
             strftime(time_string, 32, "%Y-%m-%d %H:%M:%S", nowtm); 
-            sprintf(time_ms, ".%ld", current_time.tv_usec);
+            sprintf(time_ms, ".%ld", (current_time.tv_usec/1000));
             strcat(time_string, time_ms);
 
             struct String *message;
