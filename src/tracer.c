@@ -53,7 +53,6 @@ int main(int argc, char **argv){
                         buffer[i++] = &argv[3][j+1];
                 }
             }
-
 //--------------------Notificar cliente----------------------------
             int fd;
             pid_t a;
@@ -96,16 +95,15 @@ int main(int argc, char **argv){
                         strcat(time_string, time_ms);
 
                         close(pipe_time[0]);
-                        write(pipe_time[1], &current_time_filho.tv_usec, sizeof(suseconds_t));
+                        write(pipe_time[1], &current_time_filho, sizeof(current_time_filho));
                         close(pipe_time[1]);
 
                 message = to_String(inicial, time_string);
                 write (fd, message->content,sizeof(char) * message->lenght);
                 close (fd);
-
 //----------------------------------------------------------------
 //--------------------fazer execute -u----------------------------
-                execvp(argv[3],buffer);
+                execvp(argv[3], buffer);
                 exit(0);
             }
             wait(0);
@@ -120,11 +118,11 @@ int main(int argc, char **argv){
 
 
                         close(pipe_time[1]);
-                        read(pipe_time[0], &current_time_filho.tv_usec, sizeof(suseconds_t));
+                        read(pipe_time[0], &current_time_filho, sizeof(current_time_filho));
                         close(pipe_time[0]);
-
-                        time_execute = current_time_pai.tv_usec - current_time_filho.tv_usec;
-            printf("Ended in %fms\n", (time_execute /1000));
+                        
+                        time_execute = (((current_time_pai.tv_sec - current_time_filho.tv_sec)*1000) + (current_time_pai.tv_usec - current_time_filho.tv_usec)/1000);
+            printf("Ended in %fms\n", (time_execute ));
 //-----------------------------------------------------------------
 //--------------------Notificar servidor---------------------------
             
@@ -150,6 +148,7 @@ int main(int argc, char **argv){
             free(time_string);
             free(time_ms);
         }
+        
         printf("Usage->outras opçoes do execute:not done yet\n");
         return 0;
     }else 
