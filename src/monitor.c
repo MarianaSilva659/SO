@@ -11,6 +11,7 @@ struct Info { //se o programName for NULL então é final
     char pedido;
     int pid;
     char* programName;//buffer[0]
+    char* time;
     //timestamp;    
 };
 
@@ -19,6 +20,7 @@ typedef struct log_entries{
  char *start_time;
  char *end_time;
  int pid;
+ int pending_position;
  char status;
 }Entry;
 
@@ -32,6 +34,23 @@ typedef struct log
     int starting_position;
     int current_index;
 }Log;
+/*
+void upDateTable(Log log, struct Info entry){
+    const int x = entry.pid - log.starting_value;
+ if(log.entries[x].status == '\0'){
+    log.entries[x].status == 'S';
+    log.entries[x].program_name = strdup(entry.programName);
+    log.entries[x].start_time = strdup(entry.time);
+    log.entries[x].pid = entry.pid;
+     log.entries[x].pid = log.current_index;
+    log.pending[log.current_index] = &log.entries[x];
+    log.current_index++;
+ }else{
+    log.entries[x].status == 'E';
+    log.entries[x].end_time = entry.time;
+    log.pending[log.entries[x].pending_position] = NULL;
+ }
+}*/
 
 
 int Server_parser (char *message, struct Info *store){
@@ -51,8 +70,11 @@ int Server_parser (char *message, struct Info *store){
              store->pid = atoi(token);
           }
          else if(i == 4) {
-            free(store->programName);
+               free(store->programName);
             store->programName = strdup(token);
+          }else if(i == 6){
+            free(store->time);
+            store->time = strdup(token);
           }
 
         token = strtok(NULL, " ");
@@ -70,8 +92,9 @@ int main(int argc, char **argv){
     int log;
     int fd_read, fd_write,bytes_read;
     struct Info info;
-    char *buffer = calloc(512, sizeof(char));
     info.programName = malloc(sizeof(char));
+    info.time = malloc(sizeof(char));
+    char *buffer = calloc(512, sizeof(char));
         if((fd_read = open("fifo",O_RDONLY)) == -1){
             perror("open");
             return 1;
@@ -101,6 +124,9 @@ int main(int argc, char **argv){
                 write (log, buffer,strlen(buffer));
             }
         }
+        free(info.programName);
+        free(info.time);
+        free(buffer);
         close (fd_read);
         close(fd_write);
         unlink("fifo");
