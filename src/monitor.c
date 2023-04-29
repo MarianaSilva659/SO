@@ -14,9 +14,28 @@ struct Info { //se o programName for NULL então é final
     //timestamp;    
 };
 
+typedef struct log_entries{
+ char *program_name;
+ char *start_time;
+ char *end_time;
+ int pid;
+ char status;
+}Entry;
+
+typedef struct log
+{
+    Entry *entries;
+    Entry **pending;
+    int starting_value;
+    int entry_size;
+    int pending_size;
+    int starting_position;
+    int current_index;
+}Log;
+
+
 int Server_parser (char *message, struct Info *store){
     char *message_copy = strdup(message);
-    char **palavras = (char **) malloc(sizeof(char *) * 100);
     char *token;
     int index = 0;
     int size = 0;

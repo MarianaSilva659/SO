@@ -3,8 +3,8 @@ SRCFILES = $(wildcard *.c)
 OBJFILES = $(SRCFILES:%.c=$(BUILDDIR)%.o)
 
 program: $(OBJFILES) $(SRCFILES) # só compila o programa (o que for necessário)
-	gcc tracer.c -o tracer
-	gcc monitor.c -o monitor
+	gcc tracer.c -g -o tracer
+	gcc monitor.c -g -o monitor
 
 objects: # constroi a diretoria com os objects
 	mkdir -p $@
