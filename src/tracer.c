@@ -21,6 +21,58 @@ struct String {
     char *content;
 };
 
+char** Tracer_parser (char *message, int *tollerance){
+    char **arguments = (char **) malloc(sizeof(char *) * tollerance[0]);
+    char *token;
+    token = strtok(message, " ");
+    int i = 0;
+    for (;(token != NULL); i++) {
+        if(i >= tollerance[0] - 10){
+            char **aux = realloc(arguments, sizeof(arguments) * tollerance[0] << 1);
+            if(aux != NULL){
+               tollerance[0] = tollerance[0] << 1;
+               arguments = aux;
+            }
+        }
+        arguments[i] = strdup(token);
+        token = strtok(NULL, " ");
+    }
+    arguments[i] = NULL;
+    return arguments;
+}
+
+
+char***Pipeline_Parser(char *message, int *tollerance){
+    char ***arguments = (char ***) malloc(sizeof(char **) * tollerance[0]);
+    char *token;
+    int k=0;
+    int current_word = k;
+    for(;message[k] != '|' && (message[k] != '\0');k++); message[k] = '\0';
+    k++;
+    if(message[current_word] != '\0')
+    token = strdup(&message[current_word]);
+    else token = NULL;
+    int i = 0;
+    for (;(token != NULL); i++) {
+        if(i >= tollerance[0] - 10){
+            char ***aux = realloc(arguments, sizeof(arguments) * tollerance[0] << 1);
+            if(aux != NULL){
+               tollerance[0] = tollerance[0] << 1;
+               arguments = aux;
+            }
+        }
+        arguments[i] = Tracer_parser(token, &tollerance[i+1]);
+        current_word = k;
+        for(;(message[k] != '|') && (message[k] != '\0');k++); message[k] = '\0';
+        k++;
+        if(message[current_word] != '\0')
+        token = strdup(&message[current_word]);
+        else token = NULL;
+    }
+    arguments[i] = NULL;
+    return arguments;
+}
+
 struct String *to_String(struct Info info, char *time_string)
 {
    struct String *result = malloc(sizeof(struct String));
@@ -38,21 +90,28 @@ int main(int argc, char **argv){
     if (argc < 2){
         return 1;
     }
+    int tollerance[5] = {100, 100, 100, 100, 100};
+    char *arroz = strdup("cat log.txt | greep \"NAME\" | wc -l");
+    char  ***justforfun = Pipeline_Parser(arroz, tollerance);
+    for(int j = 0; j < 3; j++){
+        printf("HELLO\n");
+    for(int i = 0; i < 3; i++){
+        printf("%s\n\n", justforfun[j][i]);
+        if(justforfun[j][i] != NULL){
+        free(justforfun[j][i]);
+        }
+    }
+    free(justforfun[j]);
+    }
+    free(justforfun);
 
     if (strcmp(argv[1], "execute") == 0){
         if (strcmp(argv[2], "-u") == 0){
 
             //parce do arg[3] ignora espaços
-            int n = 10; //max arguments
-            char **buffer = (char**)calloc(n, sizeof(char*));
-
-            for(int i = 0,j = 0; argv[3][j] != '\0' && i < n; j++){
-                if(argv[3][j] == ' '){
-                    argv[3][j] = '\0';
-                    if(argv[3][j+1] && argv[3][j+1] != ' ')
-                        buffer[i++] = &argv[3][j+1];
-                }
-            }
+            int buffer_size = 100;
+            char **buffer = Tracer_parser(argv[3], &buffer_size);
+            
 //--------------------Notificar cliente----------------------------
             int fd;
             pid_t a;
@@ -123,6 +182,7 @@ int main(int argc, char **argv){
                         
                         time_execute = (((current_time_pai.tv_sec - current_time_filho.tv_sec)*1000) + (current_time_pai.tv_usec - current_time_filho.tv_usec)/1000);
             printf("Ended in %fms\n", (time_execute ));
+
 //-----------------------------------------------------------------
 //--------------------Notificar servidor---------------------------
             
@@ -133,7 +193,7 @@ int main(int argc, char **argv){
             struct Info final;
             final.pid = a;
             final.pedido = 'e';
-            
+                            
             final.programName = strdup("Ended");
             message = to_String(final, time_string);
 
@@ -147,6 +207,8 @@ int main(int argc, char **argv){
 //-----------------------------------------------------------------
             free(time_string);
             free(time_ms);
+            for(int k = 0; k <= buffer_size; k++) free(buffer[k]);
+            free(buffer);
         }
         
         printf("Usage->outras opçoes do execute:not done yet\n");
