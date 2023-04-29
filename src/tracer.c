@@ -90,6 +90,7 @@ int main(int argc, char **argv){
     if (argc < 2){
         return 1;
     }
+    /*Exemplo de como usar o novo parser
     int tollerance[5] = {100, 100, 100, 100, 100};
     char *arroz = strdup("cat log.txt | greep \"NAME\" | wc -l");
     char  ***justforfun = Pipeline_Parser(arroz, tollerance);
@@ -104,6 +105,7 @@ int main(int argc, char **argv){
     free(justforfun[j]);
     }
     free(justforfun);
+    */
 
     if (strcmp(argv[1], "execute") == 0){
         if (strcmp(argv[2], "-u") == 0){
