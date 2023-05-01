@@ -9,11 +9,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-struct Info { //se o programName for NULL então é final
+struct Info {
     char pedido;
     int pid;
-    char* programName;//buffer[0]
-    //timestamp;    
+    char* programName;
 };
 
 struct String {
@@ -41,8 +40,7 @@ char** Tracer_parser (char *message, int *tollerance){
     return arguments;
 }
 
-
-char***Pipeline_Parser(char *message, int *tollerance){
+char***Pipeline_Parser(char *message, int *tollerance, int *arg){
     char ***arguments = (char ***) malloc(sizeof(char **) * tollerance[0]);
     char *token;
     int k=0;
@@ -69,6 +67,7 @@ char***Pipeline_Parser(char *message, int *tollerance){
         token = strdup(&message[current_word]);
         else token = NULL;
     }
+    *arg = i;
     arguments[i] = NULL;
     return arguments;
 }
@@ -77,9 +76,9 @@ struct String *to_String(struct Info info, char *time_string)
 {
    struct String *result = malloc(sizeof(struct String));
     result->lenght = snprintf(NULL, 0, "%c PID: %d NAME: %s TIME: %s \n", info.pedido ,info.pid, info.programName, time_string) + 1;
-   result->content = malloc(result->lenght);
-   if(result->content == NULL) return NULL;
-   snprintf(result->content, result->lenght, "%c PID: %d NAME: %s TIME: %s \n", info.pedido ,info.pid, info.programName, time_string);
+    result->content = malloc(result->lenght);
+    if(result->content == NULL) return NULL;
+    snprintf(result->content, result->lenght, "%c PID: %d NAME: %s TIME: %s \n", info.pedido ,info.pid, info.programName, time_string);
    return result;
 }
 
@@ -91,7 +90,7 @@ int execute_U(char *argv){
 
         int fd;
         pid_t a;
-        int time_execute;
+        double time_execute;
         int pipe_time[2];
         struct timeval current_time_filho;
         struct timeval current_time_pai;
@@ -150,8 +149,8 @@ int execute_U(char *argv){
         read(pipe_time[0], &current_time_filho, sizeof(current_time_filho));
         close(pipe_time[0]);
 
-        time_execute = (((current_time_pai.tv_sec - current_time_filho.tv_sec)*1000) + (current_time_pai.tv_usec - current_time_filho.tv_usec)/1000);
-        printf("Ended in %dms\n", (time_execute ));
+        time_execute = (((current_time_pai.tv_sec - current_time_filho.tv_sec)*1000) + (double)(current_time_pai.tv_usec - current_time_filho.tv_usec)/1000);
+        printf("Ended in %.3fms\n", time_execute);
 
         if((fd = open("fifo",O_WRONLY)) == -1)
             return 3;
@@ -174,6 +173,75 @@ int execute_U(char *argv){
 
         return 0;
 }
+
+
+void funcionalidades_avancadas(char *argv3){
+    struct timeval start_time, end_time;
+    double time_execute;
+    int arg = 3;
+     /*int tollerance[5] = {100, 100, 100, 100, 100};
+    char *arroz = strdup("cat fich1 | cat fich1 | wc -l");
+    char  ***comandos = Pipeline_Parser(arroz, tollerance, &arg);
+printf("arg %d\n", arg);
+for(int i = 0; i < 4; i++){
+    for(int j = 0; j < 3;j++){
+        printf("comandos %s\n", comandos[i][j]);
+    }
+}*/
+   char* comandos [][3] = {{"cat", "fich1", NULL}, {"grep", "palavra", NULL}, {"wc", "-l", NULL}};
+    /*for(int i = 0; i < 3;i++){
+        for(int j =0 ; j < 3; j++){
+    printf("comandooo %s\n", comandos[i][j]);
+    }
+    }*/
+  pid_t pid;
+  int pipe_argumentos[arg - 1][2];
+  int pid_primeiro_processo;
+
+        for (int h = 0; h < arg-1; h++){
+            if(pipe(pipe_argumentos [h]) == -1) {
+                        perror("erroPipe");
+                        exit(EXIT_FAILURE);
+            }
+        }
+            gettimeofday(&start_time, NULL);
+        for (int i = 0; i < arg; i++){
+            pid = fork();
+            if (pid == -1) {
+                        perror("fork");
+                        exit (EXIT_FAILURE);
+            }
+            if (pid == 0) {
+                if (i != (arg - 1)) {
+                    dup2(pipe_argumentos[i][1], STDOUT_FILENO);
+                }
+                if (i > 0) {
+                    dup2(pipe_argumentos[i - 1][0], STDIN_FILENO);
+                }
+                execvp(comandos[i][0], comandos[i]);
+                exit(EXIT_FAILURE);
+            }
+            //processo pai
+             else {
+                if (i == 0) {
+                    pid_primeiro_processo = pid;
+                    printf("Running PID %d\n", pid_primeiro_processo);
+                }
+                wait(NULL);
+                if (i > 0) {
+                    close(pipe_argumentos[i - 1][0]);
+                }
+                if (i != (arg - 1)) {
+                    close(pipe_argumentos[i][1]);
+                }
+            }
+        }
+    gettimeofday(&end_time, NULL);
+    time_execute = (end_time.tv_sec - start_time.tv_sec) * 1000 + (double)(end_time.tv_usec - start_time.tv_usec) / 1000;
+    printf("Ended in %.3fms\n", time_execute);
+}
+
+
 
 
 int main(int argc, char **argv){
@@ -202,7 +270,10 @@ int main(int argc, char **argv){
         if (strcmp(argv[2], "-u") == 0){
                 execute_U(argv[3]);
         }
-        
+        else if(strcmp(argv[2], "-p") == 0){
+            funcionalidades_avancadas(argv[3]);
+            return 0;
+        }
         printf("Usage->outras opçoes do execute:not done yet\n");
         return 0;
     }else 
