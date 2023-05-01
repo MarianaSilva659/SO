@@ -67,18 +67,27 @@ char***Pipeline_Parser(char *message, int *tollerance, int *arg){
         token = strdup(&message[current_word]);
         else token = NULL;
     }
-    *arg = i;
-    arguments[i] = NULL;
+
+    arguments[i] = calloc(1, sizeof(char));
     return arguments;
 }
 
-struct String *to_String(struct Info info, char *time_string)
+struct String *to_String(struct Info info, struct timeval time)
 {
    struct String *result = malloc(sizeof(struct String));
-    result->lenght = snprintf(NULL, 0, "%c PID: %d NAME: %s TIME: %s \n", info.pedido ,info.pid, info.programName, time_string) + 1;
-    result->content = malloc(result->lenght);
-    if(result->content == NULL) return NULL;
-    snprintf(result->content, result->lenght, "%c PID: %d NAME: %s TIME: %s \n", info.pedido ,info.pid, info.programName, time_string);
+    result->lenght = snprintf(NULL, 0, "%c PID: %d NAME: %s TIME: %ld.%06ld \n", info.pedido ,info.pid, info.programName, time.tv_sec, time.tv_usec) + 1;
+   result->content = malloc(result->lenght);
+   if(result->content == NULL) return NULL;
+   snprintf(result->content, result->lenght, "%c PID: %d NAME: %s TIME: %ld.%06ld \n", info.pedido ,info.pid, info.programName, time.tv_sec, time.tv_usec);
+   return result;
+}
+
+struct String *Status_to_String(struct Info info){ 
+   struct String *result = malloc(sizeof(struct String));
+   result->lenght = snprintf(NULL, 0, "%c PID: %d \n", info.pedido ,info.pid) + 1;
+   result->content = malloc(result->lenght);
+   if(result->content == NULL) return NULL;
+   snprintf(result->content, result->lenght, "%c PID: %d \n", info.pedido ,info.pid);
    return result;
 }
 
@@ -94,9 +103,6 @@ int execute_U(char *argv){
         int pipe_time[2];
         struct timeval current_time_filho;
         struct timeval current_time_pai;
-        struct tm *nowtm;
-        char *time_string = (char*)malloc(sizeof(char)* 32);
-        char *time_ms = (char*)malloc(sizeof(char) * 8);
 
         if(pipe(pipe_time) == -1){
             perror("erroPipe");
@@ -116,18 +122,12 @@ int execute_U(char *argv){
             printf("\nProgram name: %s|\n",inicial.programName);
 
         gettimeofday(&current_time_filho, NULL);
-        time_t nowtime = current_time_filho.tv_sec;
-        nowtm = localtime(&nowtime);
-
-        strftime(time_string, 32, "%Y-%m-%d %H:%M:%S", nowtm); 
-        sprintf(time_ms, ".%ld", (current_time_filho.tv_usec/1000));
-        strcat(time_string, time_ms);
 
         close(pipe_time[0]);
         write(pipe_time[1], &current_time_filho, sizeof(current_time_filho));
         close(pipe_time[1]);
 
-            message = to_String(inicial, time_string);
+            message = to_String(inicial, current_time_filho);
             write (fd, message->content,sizeof(char) * message->lenght);
             close (fd);
 
@@ -137,14 +137,6 @@ int execute_U(char *argv){
         wait(0);
 
         gettimeofday(&current_time_pai, NULL);
-        time_t nowtime = current_time_pai.tv_sec;
-        nowtm = localtime(&nowtime);
-
-        strftime(time_string, 32,"%Y-%m-%d %H:%M:%S", nowtm);
-        sprintf(time_ms, ".%ld", (current_time_pai.tv_usec/1000));
-        strcat(time_string, time_ms);
-
-
         close(pipe_time[1]);
         read(pipe_time[0], &current_time_filho, sizeof(current_time_filho));
         close(pipe_time[0]);
@@ -160,14 +152,12 @@ int execute_U(char *argv){
         final.pedido = 'e';
 
         final.programName = strdup("Ended");
-        message = to_String(final, time_string);
+        message = to_String(final, current_time_pai);
 
         write (fd, message->content,sizeof(char) * message->lenght);
         close (fd);
         exit(0);
 
-        free(time_string);
-        free(time_ms);
         for(int k = 0; k <= buffer_size; k++) free(buffer[k]);
         free(buffer);
 
@@ -276,53 +266,61 @@ int main(int argc, char **argv){
         }
         printf("Usage->outras opçoes do execute:not done yet\n");
         return 0;
-    }else 
+    }else {
 //-----------------------------------------------------------------
-        if(strcmp(argv[1], "status") == 0){
+printf("oi\n");
             //criar o fifo
+                  int fd_write, self_read, self_write;
             struct Info info;
             info.pid = getpid();
             int tamanho = snprintf(NULL, 0, "fifo_%d", info.pid) + 1;
             info.programName = malloc(tamanho);
             if(info.programName == NULL) return -1;
             snprintf(info.programName, tamanho, "fifo_%d", info.pid);
-            if (mkfifo(info.programName,0666)==0)
-                perror("mkfifo"); 
+            if(strcmp(argv[1], "status") == 0)
             info.pedido = 's';
+            else if(strcmp(argv[1], "close_monitor") == 0)
+            info.pedido = 'c';
+            if(info.pedido != 'c')
+            if (mkfifo(info.programName,0666)==0)
+                perror("mkfifo");
+            printf("%s\n", info.programName);
 
             //mandar para o servidor o fifo e o tempo a que foi pedido
             struct timeval current_time;
-            int fd;
-            int time_execute;
-            struct tm *nowtm;
-            char *time_string = (char*)malloc(sizeof(char)* 32);
-            char *time_ms = (char*)malloc(sizeof(char) * 8);
             
-            if((fd = open("fifo",O_WRONLY)) == -1)
+
+            if((fd_write = open("fifo",O_WRONLY)) == -1){
+             perror("open");
                     return 2;
-                // mandar a informação para o server
-                
+            }
+            // mandar a informação para o server
+   
+
+            struct String *message; 
             gettimeofday(&current_time, NULL);
-            time_t nowtime = current_time.tv_sec;
-            nowtm = localtime(&nowtime);
+            message = to_String(info, current_time);
+            write (fd_write, message->content,sizeof(char) * message->lenght);
+            close (fd_write);
+            if(info.pedido != 'c'){
 
-            strftime(time_string, 32, "%Y-%m-%d %H:%M:%S", nowtm); 
-            sprintf(time_ms, ".%ld", (current_time.tv_usec/1000));
-            strcat(time_string, time_ms);
-
-            struct String *message;
-            message = to_String(info, time_string);
-            write (fd, message->content,sizeof(char) * message->lenght);
-            close (fd);
-            //esperar pelo servidor e fazer print de tudo o que receber do fifo no strout
-
-            free(time_string);
-            free(time_ms);
+            if((self_read = open(info.programName,O_RDONLY)) == -1){
+                perror("open");
+                    return 2;
+            }
+                printf("Entrou\n");
+                char *buffer = malloc(512*sizeof(char));
+                int bytes_read;
+                while((bytes_read = read(self_read, buffer, 512)) > 0){
+                    printf("%s \n", buffer);
+                }
+                free(buffer);
+            close (self_read);
             unlink(info.programName);
+            }
+            //esperar pelo servidor e fazer print de tudo o que receber do fifo no strout
             //no servidor
             //percorrer os logs e procurar aqueles que até ao momento pedido, não tinham acabado e fazer print deles no fifo recebido
-    }else{
-        printf("Usage:not done yet\n");
-        return 0;
-    }
+    } 
 }
+
