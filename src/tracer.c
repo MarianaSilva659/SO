@@ -175,7 +175,7 @@ int execute_U(char *argv){
 }
 
 
-void funcionalidades_avancadas(char *argv3){
+int funcionalidades_avancadas(char *argv3){
     struct timeval start_time, end_time;
     double time_execute;
     int arg = 3;
@@ -189,7 +189,7 @@ for(int i = 0; i < 4; i++){
     }
 }*/
    char* comandos [][3] = {{"cat", "fich1", NULL}, {"grep", "palavra", NULL}, {"wc", "-l", NULL}};
-    /*for(int i = 0; i < 3;i++){
+   /* for(int i = 0; i < 3;i++){
         for(int j =0 ; j < 3; j++){
     printf("comandooo %s\n", comandos[i][j]);
     }
@@ -224,8 +224,7 @@ for(int i = 0; i < 4; i++){
             //processo pai
              else {
                 if (i == 0) {
-                    pid_primeiro_processo = pid;
-                    printf("Running PID %d\n", pid_primeiro_processo);
+                    printf("Running PID %d\n", getpid());
                 }
                 wait(NULL);
                 if (i > 0) {
@@ -239,6 +238,7 @@ for(int i = 0; i < 4; i++){
     gettimeofday(&end_time, NULL);
     time_execute = (end_time.tv_sec - start_time.tv_sec) * 1000 + (double)(end_time.tv_usec - start_time.tv_usec) / 1000;
     printf("Ended in %.3fms\n", time_execute);
+    return 0;
 }
 
 
