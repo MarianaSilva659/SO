@@ -52,33 +52,44 @@ char***Pipeline_Parser(char *message, int *tollerance, int *arg){
     else token = NULL;
     int i = 0;
     for (;(token != NULL); i++) {
-        if(i >= tollerance[0] - 10){
-            char ***aux = realloc(arguments, sizeof(arguments) * tollerance[0] << 1);
+        if(i >= tollerance[0] -1){
+            char ***aux = (char***)realloc(arguments, sizeof(char**) * tollerance[0] * 2);
             if(aux != NULL){
-               tollerance[0] = tollerance[0] << 1;
+               int *aux2 = (int*)realloc(tollerance, sizeof(int) * tollerance[0] * 2);
+               if(aux2 != NULL){
+                tollerance = aux2;
+                int temp = tollerance[0];
+                tollerance[0] = tollerance[0] * 2;
+               for(; temp < tollerance[0]; temp++) tollerance[temp] = 1000;
+               }
                arguments = aux;
             }
         }
         arguments[i] = Tracer_parser(token, &tollerance[i+1]);
         current_word = k;
-        for(;(message[k] != '|') && (message[k] != '\0');k++); message[k] = '\0';
+        for(;(message[k] != '|') && (message[k] != '\0');k++);
+        if(message[k] != '\0'){
+        message[k] = '\0';
         k++;
+        }
         if(message[current_word] != '\0')
         token = strdup(&message[current_word]);
         else token = NULL;
+        printf("Token: %s\n", token);
     }
-
-    arguments[i] = calloc(1, sizeof(char));
+    arg[0] = i;
+    arguments[i] = NULL;
     return arguments;
 }
 
-struct String *to_String(struct Info info, struct timeval time)
+struct String *to_String(struct Info info, struct timeval time, char* arguments)
 {
    struct String *result = malloc(sizeof(struct String));
-    result->lenght = snprintf(NULL, 0, "%c PID: %d NAME: %s TIME: %ld.%06ld \n", info.pedido ,info.pid, info.programName, time.tv_sec, time.tv_usec) + 1;
+    result->lenght = snprintf(NULL, 0, "%c PID: %d NAME: %s TIME: %ld.%06ld %s\n", info.pedido ,info.pid, info.programName, time.tv_sec, time.tv_usec, arguments) + 1;
    result->content = malloc(result->lenght);
+
    if(result->content == NULL) return NULL;
-   snprintf(result->content, result->lenght, "%c PID: %d NAME: %s TIME: %ld.%06ld \n", info.pedido ,info.pid, info.programName, time.tv_sec, time.tv_usec);
+   snprintf(result->content, result->lenght, "%c PID: %d NAME: %s TIME: %ld.%06ld %s\n", info.pedido ,info.pid, info.programName, time.tv_sec, time.tv_usec, arguments);
    return result;
 }
 
@@ -127,7 +138,7 @@ int execute_U(char *argv){
         write(pipe_time[1], &current_time_filho, sizeof(current_time_filho));
         close(pipe_time[1]);
 
-            message = to_String(inicial, current_time_filho);
+            message = to_String(inicial, current_time_filho, "");
             write (fd, message->content,sizeof(char) * message->lenght);
             close (fd);
 
@@ -152,7 +163,7 @@ int execute_U(char *argv){
         final.pedido = 'e';
 
         final.programName = strdup("Ended");
-        message = to_String(final, current_time_pai);
+        message = to_String(final, current_time_pai, "");
 
         write (fd, message->content,sizeof(char) * message->lenght);
         close (fd);
@@ -165,25 +176,18 @@ int execute_U(char *argv){
 }
 
 
-int funcionalidades_avancadas(char *argv3){
-    struct timeval start_time, end_time;
+int execute_P(char *argv3){
+  struct timeval start_time, end_time;
     double time_execute;
-    int arg = 3;
-     /*int tollerance[5] = {100, 100, 100, 100, 100};
-    char *arroz = strdup("cat fich1 | cat fich1 | wc -l");
-    char  ***comandos = Pipeline_Parser(arroz, tollerance, &arg);
-printf("arg %d\n", arg);
-for(int i = 0; i < 4; i++){
-    for(int j = 0; j < 3;j++){
-        printf("comandos %s\n", comandos[i][j]);
-    }
-}*/
-   char* comandos [][3] = {{"cat", "fich1", NULL}, {"grep", "palavra", NULL}, {"wc", "-l", NULL}};
-   /* for(int i = 0; i < 3;i++){
-        for(int j =0 ; j < 3; j++){
-    printf("comandooo %s\n", comandos[i][j]);
-    }
-    }*/
+    int arg;
+     int *tollerance = malloc(1000 * sizeof(int));
+     for(int i = 0; i < 1000; i++) tollerance[i] = 1000;
+     printf("%s\n", argv3);
+    char *line = strdup(argv3);
+    char  ***comandos = Pipeline_Parser(line, tollerance, &arg);
+    printf("%d\n", arg);
+    for(int k = 0; k < arg; k++)  for(int j = 0; j < 2; j++) printf("%s\n", comandos[k][j]);
+    free(line);
   pid_t pid;
   int pipe_argumentos[arg - 1][2];
   int pid_primeiro_processo;
@@ -231,48 +235,49 @@ for(int i = 0; i < 4; i++){
     return 0;
 }
 
-
-
-
 int main(int argc, char **argv){
    struct String *message;
     if (argc < 2){
         return 1;
     }
-    /*Exemplo de como usar o novo parser
-    int tollerance[5] = {100, 100, 100, 100, 100};
-    char *arroz = strdup("cat log.txt | greep \"NAME\" | wc -l");
-    char  ***justforfun = Pipeline_Parser(arroz, tollerance);
-    for(int j = 0; j < 3; j++){
-        printf("HELLO\n");
-    for(int i = 0; i < 3; i++){
-        printf("%s\n\n", justforfun[j][i]);
-        if(justforfun[j][i] != NULL){
-        free(justforfun[j][i]);
-        }
-    }
-    free(justforfun[j]);
-    }
-    free(justforfun);
-    */
 
     if (strcmp(argv[1], "execute") == 0){
         if (strcmp(argv[2], "-u") == 0){
                 execute_U(argv[3]);
         }
         else if(strcmp(argv[2], "-p") == 0){
-            funcionalidades_avancadas(argv[3]);
+            execute_P(argv[3]);
             return 0;
         }
         printf("Usage->outras opçoes do execute:not done yet\n");
         return 0;
     }else {
 //-----------------------------------------------------------------
-printf("oi\n");
             //criar o fifo
                   int fd_write, self_read, self_write;
             struct Info info;
+            char *argumments = calloc(1000, sizeof(char));
+            int arg_size = 1000;
+            int current_arg_size = 0;
             info.pid = getpid();
+            if(argc >= 3){
+                int temp;
+                char loop_count = 0;
+                for(int i = 2; i < argc; i++){
+                 temp = strlen(argv[i]);
+            while(current_arg_size + temp >= arg_size){
+                if(loop_count > 10) exit(9);
+                    char *aux = (char *)realloc(argumments, arg_size * 2 * sizeof(char));
+                if(aux != NULL){
+                    arg_size == arg_size << 1;
+                    argumments = aux;
+                    loop_count =0;
+                }else loop_count++;
+            }
+            sprintf(argumments,"%s %s",argumments, argv[i]);
+            }
+            }
+        
             int tamanho = snprintf(NULL, 0, "fifo_%d", info.pid) + 1;
             info.programName = malloc(tamanho);
             if(info.programName == NULL) return -1;
@@ -281,6 +286,13 @@ printf("oi\n");
             info.pedido = 's';
             else if(strcmp(argv[1], "close_monitor") == 0)
             info.pedido = 'c';
+            else if(strcmp(argv[1], "stats-time") == 0)
+            info.pedido = 't';
+            else if(strcmp(argv[1], "stats-command") == 0)
+            info.pedido = 'n';
+            else if(strcmp(argv[1], "stats-uniq") == 0)
+            info.pedido = 'u';
+
             if(info.pedido != 'c')
             if (mkfifo(info.programName,0666)==0)
                 perror("mkfifo");
@@ -299,7 +311,7 @@ printf("oi\n");
 
             struct String *message; 
             gettimeofday(&current_time, NULL);
-            message = to_String(info, current_time);
+            message = to_String(info, current_time, &argumments[1]);
             write (fd_write, message->content,sizeof(char) * message->lenght);
             close (fd_write);
             if(info.pedido != 'c'){
@@ -308,7 +320,6 @@ printf("oi\n");
                 perror("open");
                     return 2;
             }
-                printf("Entrou\n");
                 char *buffer = malloc(512*sizeof(char));
                 int bytes_read;
                 while((bytes_read = read(self_read, buffer, 512)) > 0){
