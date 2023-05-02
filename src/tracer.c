@@ -75,7 +75,6 @@ char***Pipeline_Parser(char *message, int *tollerance, int *arg){
         if(message[current_word] != '\0')
         token = strdup(&message[current_word]);
         else token = NULL;
-        printf("Token: %s\n", token);
     }
     arg[0] = i;
     arguments[i] = NULL;
@@ -125,12 +124,18 @@ int execute_U(char *argv){
             inicial.pid = getpid();
             inicial.programName = strdup(argv);
 
-            printf("Running PID %d\n", inicial.pid);
+            char *pid_out = malloc(sizeof(char) * 100);
+            sprintf(pid_out, "Running PID %d\n", getpid());
+            write(1, pid_out, strlen(pid_out));
+            free(pid_out);
 
             if((fd = open("fifo",O_WRONLY)) == -1)
                 return 2;
 
-            printf("\nProgram name: %s|\n",inicial.programName);
+            char *program_name = malloc(sizeof(char) * 100);
+            sprintf(program_name, "Program name: %s|\n", inicial.programName);
+            write(1, program_name, strlen(program_name));
+            free(program_name);
 
         gettimeofday(&current_time_filho, NULL);
 
@@ -153,7 +158,11 @@ int execute_U(char *argv){
         close(pipe_time[0]);
 
         time_execute = (((current_time_pai.tv_sec - current_time_filho.tv_sec)*1000) + (double)(current_time_pai.tv_usec - current_time_filho.tv_usec)/1000);
-        printf("Ended in %.3fms\n", time_execute);
+        
+        char *time = malloc(sizeof(char) * 100);
+        sprintf(time, "Ended in %.3fms\n", time_execute);
+        write(1, time, strlen(time));
+        free(time);
 
         if((fd = open("fifo",O_WRONLY)) == -1)
             return 3;
@@ -182,11 +191,8 @@ int execute_P(char *argv3){
     int arg;
      int *tollerance = malloc(1000 * sizeof(int));
      for(int i = 0; i < 1000; i++) tollerance[i] = 1000;
-     printf("%s\n", argv3);
     char *line = strdup(argv3);
     char  ***comandos = Pipeline_Parser(line, tollerance, &arg);
-    printf("%d\n", arg);
-    for(int k = 0; k < arg; k++)  for(int j = 0; j < 2; j++) printf("%s\n", comandos[k][j]);
     free(line);
   pid_t pid;
   int pipe_argumentos[arg - 1][2];
@@ -218,7 +224,10 @@ int execute_P(char *argv3){
             //processo pai
              else {
                 if (i == 0) {
-                    printf("Running PID %d\n", getpid());
+                    char *str = malloc(sizeof(char) * 100);
+                    sprintf(str, "Running PID %d\n", getpid());
+                    write(1, str, strlen(str));
+                    free(str);
                 }
                 wait(NULL);
                 if (i > 0) {
@@ -231,7 +240,11 @@ int execute_P(char *argv3){
         }
     gettimeofday(&end_time, NULL);
     time_execute = (end_time.tv_sec - start_time.tv_sec) * 1000 + (double)(end_time.tv_usec - start_time.tv_usec) / 1000;
-    printf("Ended in %.3fms\n", time_execute);
+
+    char *time = malloc(sizeof(char) * 100);
+    sprintf(time, "Ended in %.3fms\n", time_execute);
+    write(1, time, strlen(time));
+    free(time);
     return 0;
 }
 
@@ -247,9 +260,7 @@ int main(int argc, char **argv){
         }
         else if(strcmp(argv[2], "-p") == 0){
             execute_P(argv[3]);
-            return 0;
         }
-        printf("Usage->outras opçoes do execute:not done yet\n");
         return 0;
     }else {
 //-----------------------------------------------------------------
