@@ -260,7 +260,7 @@ void status(Log *log, struct MSG info){
     close(fd);
 }
 
-void stats_command(Log *log, struct MSG info){
+void stats_uniq(Log *log, struct MSG info){
     int fd;
       if (mkfifo(info.programName,0666)==0)
     perror("mkfifo");
@@ -287,7 +287,7 @@ void stats_command(Log *log, struct MSG info){
     freeTable(table);
 }
 
-void stats_uniq(Log *log, struct MSG info){
+void stats_command(Log *log, struct MSG info){
     int fd;
     char *fifo;
     int tamanho = snprintf(NULL, 0, "fifo_%d", info.pid) + 1;
@@ -305,14 +305,15 @@ void stats_uniq(Log *log, struct MSG info){
     const int limit = info.current_index;
     const int inicial_pid = log->starting_value;
     int x;
+    int count = 0;
     for(int i = 0; i < limit; i++){
         x = info.arguments[i]- inicial_pid;
         if(x>=0 && (info.arguments[i] == log->entries[x].pid) && (log->entries[x].pending_position == -1))
-        updateHT(log->entries[x].program_name, table);
+        if(strcmp(log->entries[x].program_name, info.programName) == 0)count++;
     }
     x = snprintf(NULL, 0, "%s was executed %d\n", info.programName, table[0].current_valid_entry) + 1;
     char* aux = malloc(x * sizeof(char));
-    snprintf(aux, x, "%s was executed %d\n", info.programName, table[0].current_valid_entry) + 1;
+    snprintf(aux, x, "%s was executed %d\n", info.programName, count) + 1;
     write(fd, aux, x * sizeof(char));
     close(fd);
     free(aux);

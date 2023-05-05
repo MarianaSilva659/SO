@@ -309,7 +309,7 @@ int main(int argc, char **argv){
             return 100;
             }
             int count = 1;
-            if(info.pedido != 'u'){
+            if(info.pedido != 'n'){
             int tamanho = snprintf(NULL, 0, "fifo_%d", info.pid) + 1;
             info.programName = malloc(tamanho);
             if(info.programName == NULL) return -1;
@@ -319,8 +319,6 @@ int main(int argc, char **argv){
             if((info.pedido != 'c'))
             if (mkfifo(info.programName,0666)==0)
                 perror("mkfifo");
-          
-            printf("%s\n", info.programName);
 
             //mandar para o servidor o fifo e o tempo a que foi pedido
             struct timeval current_time;
@@ -335,7 +333,7 @@ int main(int argc, char **argv){
 
             struct String *message; 
             gettimeofday(&current_time, NULL);
-            if(info.pedido != 'u')
+            if(info.pedido != 'n')
             message = to_String(info, current_time, &argumments[1]);
             else{             
                 for(; argumments[count] != ' '; count++);
