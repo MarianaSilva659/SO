@@ -303,6 +303,13 @@ void stats_command(Log *log, struct MSG info){
     }
     HT* table =newTable();
     const int limit = info.current_index;
+        int temp;
+    for(int i = 0; i <  limit; i++){
+        temp = info.arguments[i];
+        for(int j = i+1; j < limit; j++){
+            if(temp == info.arguments[j]) info.arguments[j] = -1;
+        }
+    }
     const int inicial_pid = log->starting_value;
     int x;
     int count = 0;
