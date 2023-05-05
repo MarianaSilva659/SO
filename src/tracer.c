@@ -204,7 +204,30 @@ int execute_P(char *argv3){
                         exit(EXIT_FAILURE);
             }
         }
-            gettimeofday(&start_time, NULL);
+        gettimeofday(&start_time, NULL);
+
+                    //notificar servidor
+        int fd;
+        if((fd = open("fifo",O_WRONLY)) == -1)
+            return 2;
+        struct String *message;
+        struct Info info;
+        info.pedido = 'e';
+        info.pid = getpid();
+        char *argv = (char *) malloc(sizeof(char)*255);
+ 
+        sprintf(argv,"%s",comandos[0][0]); 
+
+        for(int iterator = 1; iterator < arg; iterator++){
+
+            argv = strcat(argv,"|");
+            argv = strcat(argv,comandos[iterator][0]);
+        }
+        info.programName = strdup(argv);
+        message = to_String(info, start_time,"");
+        write (fd, message->content,sizeof(char) * message->lenght);
+        close (fd);
+                    //notificar servidor
         for (int i = 0; i < arg; i++){
             pid = fork();
             if (pid == -1) {
@@ -239,6 +262,18 @@ int execute_P(char *argv3){
             }
         }
     gettimeofday(&end_time, NULL);
+    //notificar servidor
+
+    fd = -1;
+    if((fd = open("fifo",O_WRONLY)) == -1)
+        return 2;
+    info.pedido = 'e';
+    info.programName = strdup("Ended");
+    message = to_String(info, end_time,"");
+    write (fd, message->content,sizeof(char) * message->lenght);
+    close (fd); 
+
+    //notificar servidor
     time_execute = (end_time.tv_sec - start_time.tv_sec) * 1000 + (double)(end_time.tv_usec - start_time.tv_usec) / 1000;
 
     char *time = malloc(sizeof(char) * 100);
