@@ -1,0 +1,1 @@
+int status(int argc, char **argv);

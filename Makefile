@@ -3,16 +3,13 @@ SRCFILES = $(wildcard src/*.c)
 OBJFILES = $(SRCFILES:src/%.c=$(BUILDDIR)%.o)
 
 program: folders $(OBJFILES)  # só compila o programa (o que for necessário)
-	gcc src/tracer.c -g -o bin/tracer
-	gcc src/monitor.c -g -o bin/monitor
+	gcc src/util.c src/status.c src/execute.c src/tracer.c -g -o tracer
+	gcc src/monitor.c -g -o monitor
 
-folders: bin pid_files
+folders: pid_files
 
 monitor: program
-	./bin/monitor pid_files
-
-bin:
-	mkdir -p $@
+	./monitor pid_files
 
 objects: # constroi a diretoria com os objects
 	mkdir -p $@
@@ -24,4 +21,4 @@ $(BUILDDIR)%.o: src/%.c | objects # cria os objetos
 	$(CC) -o "$@" -c "$<"
 
 clean: #apaga td o que foi criado
-	rm -rf $(BUILDDIR) bin/* fifo fifo_* pid_files/*
+	rm -rf $(BUILDDIR) monitor tracer fifo fifo_* pid_files/*
