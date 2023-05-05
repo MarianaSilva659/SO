@@ -257,6 +257,7 @@ int main(int argc, char **argv){
     if (strcmp(argv[1], "execute") == 0){
         if (strcmp(argv[2], "-u") == 0){
                 execute_U(argv[3]);
+                return 0;
         }
         else if(strcmp(argv[2], "-p") == 0){
             execute_P(argv[3]);
@@ -303,10 +304,22 @@ int main(int argc, char **argv){
             info.pedido = 'n';
             else if(strcmp(argv[1], "stats-uniq") == 0)
             info.pedido = 'u';
+            else{
+            printf("Invalid_Command\n");
+            return 100;
+            }
+            int count = 1;
+            if(info.pedido != 'u'){
+            int tamanho = snprintf(NULL, 0, "fifo_%d", info.pid) + 1;
+            info.programName = malloc(tamanho);
+            if(info.programName == NULL) return -1;
+            snprintf(info.programName, tamanho, "fifo_%d", info.pid);
+            }
 
-            if(info.pedido != 'c')
+            if((info.pedido != 'c'))
             if (mkfifo(info.programName,0666)==0)
                 perror("mkfifo");
+          
             printf("%s\n", info.programName);
 
             //mandar para o servidor o fifo e o tempo a que foi pedido
@@ -322,15 +335,24 @@ int main(int argc, char **argv){
 
             struct String *message; 
             gettimeofday(&current_time, NULL);
+            if(info.pedido != 'u')
             message = to_String(info, current_time, &argumments[1]);
+            else{             
+                for(; argumments[count] != ' '; count++);
+                argumments[count] = '\0';
+                char *temp = info.programName;
+                info.programName = strdup(&argumments[1]);
+                 message= to_String(info, current_time, &argumments[count+1]);
+                 free(info.programName);
+                 info.programName = temp;
+            }
             write (fd_write, message->content,sizeof(char) * message->lenght);
             close (fd_write);
             if(info.pedido != 'c'){
-
-            if((self_read = open(info.programName,O_RDONLY)) == -1){
+                if((self_read = open(info.programName,O_RDONLY)) == -1){
                 perror("open");
-                    return 2;
-            }
+            return 2;
+                }
                 char *buffer = malloc(512*sizeof(char));
                 int bytes_read;
                 while((bytes_read = read(self_read, buffer, 512)) > 0){
@@ -340,6 +362,7 @@ int main(int argc, char **argv){
             close (self_read);
             unlink(info.programName);
             }
+            free(argumments);
             //esperar pelo servidor e fazer print de tudo o que receber do fifo no strout
             //no servidor
             //percorrer os logs e procurar aqueles que até ao momento pedido, não tinham acabado e fazer print deles no fifo recebido
