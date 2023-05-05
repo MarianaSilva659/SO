@@ -1,6 +1,6 @@
 BUILDDIR := objects/
-SRCFILES = $(wildcard *.c)
-OBJFILES = $(SRCFILES:%.c=$(BUILDDIR)%.o)
+SRCFILES = $(wildcard src/*.c)
+OBJFILES = $(SRCFILES:src/%.c=$(BUILDDIR)%.o)
 
 program: folders $(OBJFILES)  # só compila o programa (o que for necessário)
 	gcc src/tracer.c -g -o bin/tracer
@@ -11,7 +11,6 @@ folders: bin pid_files
 monitor: program
 	./bin/monitor pid_files
 
-
 bin:
 	mkdir -p $@
 
@@ -21,7 +20,7 @@ objects: # constroi a diretoria com os objects
 pid_files: # constroi a diretoria com os fichas
 	mkdir -p $@
 
-$(BUILDDIR)%.o: %.c | objects # cria os objetos
+$(BUILDDIR)%.o: src/%.c | objects # cria os objetos
 	$(CC) -o "$@" -c "$<"
 
 clean: #apaga td o que foi criado
