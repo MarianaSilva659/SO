@@ -8,7 +8,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "biblioteca/util.h"
+#include "include/util.h"
 
 
 char** Tracer_parser (char *message, int *tollerance){

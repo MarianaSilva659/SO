@@ -8,8 +8,8 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "biblioteca/execute.h"
-#include "biblioteca/status.h"
+#include "include/execute.h"
+#include "include/status.h"
 
 
 int main(int argc, char **argv){

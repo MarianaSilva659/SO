@@ -4,7 +4,7 @@ OBJFILES = $(SRCFILES:src/%.c=$(BUILDDIR)%.o)
 
 program: folders $(OBJFILES)  # só compila o programa (o que for necessário)
 	gcc src/util.c src/status.c src/execute.c src/tracer.c -g -o tracer
-	gcc src/monitor.c -g -o monitor
+	gcc src/ht.c src/server_status.c src/monitor.c -g -o monitor
 
 folders: pid_files
 
