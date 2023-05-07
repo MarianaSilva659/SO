@@ -7,8 +7,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include "server_status.h"
-#include "ht.h"
+#include "include/server_status.h"
+#include "include/ht.h"
 
 Log * newLog(){
     Log *log = calloc(1 , sizeof(Log));

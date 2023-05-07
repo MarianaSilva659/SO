@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include "ht.h"
+#include "include/ht.h"
 
 void freeTable(HT* table){
     for(int i = 0; i < 200003; i++){

@@ -27,6 +27,7 @@ int execute_U(char *argv){
         perror("erroPipe");
         exit(EXIT_FAILURE);
     }
+    
     if((a = fork()) == 0){
         struct Info inicial;
         inicial.pedido = 'e';
