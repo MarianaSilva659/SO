@@ -58,7 +58,7 @@ void upDateTable(Log *log, struct MSG entry, char *directory){
             aux = malloc(tamanho);
             if(aux == NULL) return;
             snprintf(aux, tamanho, "%s/fifo_%d.txt",directory, entry.pid);
-            printf("aux = %s\n",aux);
+
             if((arquive = open(aux,O_CREAT|O_WRONLY,0640)) == -1){
             perror("open");
             return;
@@ -88,8 +88,8 @@ void status(Log *log, struct MSG info){
     if (mkfifo(info.programName,0666)==0)
     perror("mkfifo");
     if((fd = open(info.programName, O_WRONLY)) == -1){
-        printf("ERRO\n");
-         exit(1);
+        write(1,"ERRO\n",6);
+        exit(1);
     }
     const int limit = log->current_index;
     int starting_position = log->starting_position;
@@ -114,8 +114,8 @@ void stats_uniq(Log *log, struct MSG info){
       if (mkfifo(info.programName,0666)==0)
     perror("mkfifo");
     if((fd = open(info.programName, O_WRONLY)) == -1){
-        printf("ERRO\n");
-         exit(1);
+        write(1,"ERRO\n",6);
+        exit(1);
     }
     HT* table =newTable();
 
@@ -143,12 +143,11 @@ void stats_command(Log *log, struct MSG info){
     fifo = malloc(tamanho*sizeof(char));
     if(fifo == NULL) return;
     snprintf(fifo, tamanho, "fifo_%d", info.pid);
-    printf("FIOF = %s\n", fifo);
     if (mkfifo(fifo,0666)==0)
     perror("mkfifo");
     if((fd = open(fifo, O_WRONLY)) == -1){
-        printf("ERRO\n");
-         exit(1);
+        write(1,"ERRO\n",6);
+        exit(1);
     }
     HT* table =newTable();
     const int limit = info.current_index;
@@ -182,8 +181,8 @@ void stats_time(Log *log, struct MSG info){
       if (mkfifo(info.programName,0666)==0)
     perror("mkfifo");
     if((fd = open(info.programName, O_WRONLY)) == -1){
-        printf("ERRO\n");
-         exit(1);
+        write(1,"ERRO\n",6);
+        exit(1);
     }
     const int limit = info.current_index;
     const int inicial_pid = log->starting_value;
@@ -197,7 +196,6 @@ void stats_time(Log *log, struct MSG info){
     x = snprintf(NULL, 0, "Total execution time is %lf ms\n", total) + 1;
     char* aux = malloc(x * sizeof(char));
     snprintf(aux, x, "Total execution time is %lf ms\n", total) + 1;
-    printf("aux:%s\n", aux);
     write(fd, aux, x*sizeof(char));
     free(aux);
     close(fd);

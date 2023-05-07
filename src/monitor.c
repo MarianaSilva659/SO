@@ -126,7 +126,8 @@ int main(int argc, char **argv){
             default:
             break;
             }
-              printf("%s \n", buffer);
+            write(1,buffer,strlen(buffer));
+           // printf("%s \n", buffer);
         }
         free(info.programName);
         free(info.arguments);

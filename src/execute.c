@@ -44,7 +44,7 @@ int execute_U(char *argv){
             return 2;
 
         char *program_name = malloc(sizeof(char) * 100);
-        sprintf(program_name, "Program name: %s|\n", inicial.programName);
+        sprintf(program_name, "Program name: %s\n", inicial.programName);
         write(1, program_name, strlen(program_name));
         free(program_name);
 

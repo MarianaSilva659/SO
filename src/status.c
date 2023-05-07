@@ -103,7 +103,7 @@ int status(int argc, char **argv){
         int bytes_read;
 
         while((bytes_read = read(self_read, buffer, 512)) > 0)
-            printf("%s \n", buffer);
+            write(1,buffer,strlen(buffer));
 
         free(buffer);
         close (self_read);
