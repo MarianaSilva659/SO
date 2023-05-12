@@ -79,7 +79,6 @@ int main(int argc, char **argv){
             perror("open");
             return 2;
         }
-        off_t offset;
         int i;
         while (bool && (bytes_read = read (fd_read, buffer, 512)) > 0){
           i = 0;

@@ -12,7 +12,7 @@
 
 int status(int argc, char **argv){
 
-    int fd_write, self_read, self_write;
+    int fd_write, self_read;
     struct Info info;
     char *argumments = calloc(1000, sizeof(char));
     int arg_size = 1000;
@@ -90,7 +90,7 @@ int status(int argc, char **argv){
         free(info.programName);
         info.programName = temp;
     }
-    write (fd_write, message->content,sizeof(char) * message->lenght);
+    write (fd_write, message->content, message->lenght);
     close (fd_write);
     /*----------------------------------------------------------------*/
     
