@@ -100,10 +100,33 @@ int status(int argc, char **argv){
             return 2;
         }
         char *buffer = malloc(512*sizeof(char));
-        int bytes_read;
+        ssize_t bytes_read;
+        ssize_t byteswriten;
+        int loopcount = 0;
+        off_t offset;
 
-        while((bytes_read = read(self_read, buffer, 512)) > 0)
-            write(1,buffer,strlen(buffer));
+        while((bytes_read = read(self_read, buffer, 512)) != 0){
+            if(bytes_read > 0){
+                loopcount = 0;
+            do {
+               byteswriten = write(1,buffer,(bytes_read));
+               if(loopcount > 10){
+                perror("write");
+                exit(7);
+               } 
+               loopcount++;
+            }while(byteswriten == -1);
+            }else{
+                loopcount++;
+                if(loopcount>10){
+                    perror("read");
+                    exit(8);
+                }
+            };
+        }
+        if(bytes_read == -1){
+            printf("Erro\n");
+        }
 
         free(buffer);
         close (self_read);

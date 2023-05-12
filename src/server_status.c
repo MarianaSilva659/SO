@@ -68,7 +68,13 @@ void upDateTable(Log *log, struct MSG entry, char *directory){
         tamanho = snprintf(NULL, 0, "Total execution time of program %s was %lf ms", log->entries[x].program_name, timestamp)+1;
         message = malloc(tamanho * sizeof(char));
         snprintf(message, tamanho, "Total execution time of program %s was %lf ms", log->entries[x].program_name, timestamp);
-        write (arquive, message,(tamanho-1) * sizeof(char));
+        ssize_t byteswriten;
+        int i =0;
+      do {
+        byteswriten = write (arquive, message,(tamanho-1) * sizeof(char)); 
+        if(i >= 10) break;
+        i++;
+      }while(byteswriten == -1);
         free(message);
  }
 }
@@ -101,12 +107,19 @@ void status(Log *log, struct MSG info){
     if(starting_position < limit)
     for(; starting_position < limit; starting_position++){
         if(log->pending[starting_position] > 0){
+        ssize_t byteswriten;
+        int i =0;
         string = Status_to_string(log->entries[log->pending[starting_position]], (((double)(timestamp.tv_sec - log->entries[log->pending[starting_position]].start_time.tv_sec)*1000) + ((double)timestamp.tv_usec - log->entries[log->pending[starting_position]].start_time.tv_usec)/1000));
-        write(fd, string->content, string->lenght*sizeof(char*));
+              do {
+        byteswriten =  write(fd, string->content, string->lenght);
+        if(i >= 10) exit(99);
+        i++;
+      }while(byteswriten == -1);
         }
     }
       free(string->content);
     close(fd);
+    exit(0);
 }
 
 void stats_uniq(Log *log, struct MSG info){
@@ -130,7 +143,8 @@ void stats_uniq(Log *log, struct MSG info){
     }
     const int max = table[0].current_valid_entry;
     for(int i = 0; i < max; i++){
-        write(fd, table[0].valid_entries[i]->name, (strlen(table[0].valid_entries[i]->name)+1) * sizeof(char));
+        write(fd, table[0].valid_entries[i]->name, (strlen(table[0].valid_entries[i]->name))+1);
+        write(fd, "\n", 1);
     } 
     close(fd);
     freeTable(table);
@@ -169,7 +183,7 @@ void stats_command(Log *log, struct MSG info){
     x = snprintf(NULL, 0, "%s was executed %d\n", info.programName, table[0].current_valid_entry) + 1;
     char* aux = malloc(x * sizeof(char));
     snprintf(aux, x, "%s was executed %d\n", info.programName, count) + 1;
-    write(fd, aux, x * sizeof(char));
+    write(fd, aux, x);
     close(fd);
     free(aux);
     freeTable(table);
@@ -196,7 +210,7 @@ void stats_time(Log *log, struct MSG info){
     x = snprintf(NULL, 0, "Total execution time is %lf ms\n", total) + 1;
     char* aux = malloc(x * sizeof(char));
     snprintf(aux, x, "Total execution time is %lf ms\n", total) + 1;
-    write(fd, aux, x*sizeof(char));
+    write(fd, aux, x);
     free(aux);
     close(fd);
 }

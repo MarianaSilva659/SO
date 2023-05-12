@@ -59,13 +59,12 @@ int Server_parser (char *message, struct MSG *store){
 }
 
 int main(int argc, char **argv){
+  if(argc > 1){
     Log *log = newLog();
      int tamanho;
     char bool = 1;
     if (mkfifo("fifo",0666)==0)
         perror("mkfifo"); 
-    
-    int arquive;
     int fd_read, fd_write,bytes_read;
     struct MSG info;
     info.arguments = malloc(100 * sizeof(char));
@@ -80,11 +79,12 @@ int main(int argc, char **argv){
             perror("open");
             return 2;
         }
-        lseek(arquive,0,SEEK_END);
+        off_t offset;
         int i;
         while (bool && (bytes_read = read (fd_read, buffer, 512)) > 0){
-            for(i=0;(buffer[i] != '\n') && (buffer[i] != '\0'); i++);
-            lseek(fd_read, -(bytes_read - i +2), SEEK_CUR);
+          i = 0;
+          while(i < bytes_read){
+            for(;(buffer[i] != '\n') && (buffer[i] != '\0'); i++);
             switch (buffer[0])
             {
             case 's':
@@ -127,6 +127,8 @@ int main(int argc, char **argv){
             break;
             }
             write(1,buffer,strlen(buffer));
+            i +=2;
+          }
            // printf("%s \n", buffer);
         }
         free(info.programName);
@@ -135,6 +137,12 @@ int main(int argc, char **argv){
         close (fd_read);
         close(fd_write);
         unlink("fifo");
+  }
+  else{
+    char *msg = strdup("Chamada do executável errada, falta a diretoria onde guardar os ficheiros\n");
+    write(1, msg, 77);
+    free(msg);
+  }
 }
 //se quiserem responder ao cliente cada cliente precisa tambem de um fifo e 
 //mandar a informação necessaria para o servidor aceder a esse fifo.

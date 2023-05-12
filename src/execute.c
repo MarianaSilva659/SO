@@ -55,7 +55,7 @@ int execute_U(char *argv){
         close(pipe_time[1]);
 
         message = to_String(inicial, current_time_filho, "");
-        write (fd, message->content,sizeof(char) * message->lenght);
+        write (fd, message->content, message->lenght);
         close (fd);
     //notificar servidor
     
@@ -87,7 +87,7 @@ int execute_U(char *argv){
     final.programName = strdup("Ended");
     message = to_String(final, current_time_pai, "");
 
-    write (fd, message->content,sizeof(char) * message->lenght);
+    write (fd, message->content, message->lenght);
     close (fd);
     exit(0);
     //notificar servidor
@@ -186,7 +186,7 @@ int execute_P(char *argv3){
     info.pedido = 'e';
     info.programName = strdup("Ended");
     message = to_String(info, end_time,"");
-    write (fd, message->content,sizeof(char) * message->lenght);
+    write (fd, message->content,message->lenght);
     close (fd); 
     //notificar servidor
     
