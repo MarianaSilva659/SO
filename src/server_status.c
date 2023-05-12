@@ -202,6 +202,13 @@ void stats_time(Log *log, struct MSG info){
     const int inicial_pid = log->starting_value;
     int x;
     double total = 0;
+    int temp;
+        for(int i = 0; i <  limit; i++){
+        temp = info.arguments[i];
+        for(int j = i+1; j < limit; j++){
+            if(temp == info.arguments[j]) info.arguments[j] = -1;
+        }
+    }
     for(int i = 0; i < limit; i++){
         x = info.arguments[i]- inicial_pid;
         if(x>=0 && (info.arguments[i] == log->entries[x].pid) && (log->entries[x].pending_position == -1))
