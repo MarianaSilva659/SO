@@ -125,7 +125,7 @@ int main(int argc, char **argv){
             default:
             break;
             }
-            write(1,buffer,strlen(buffer));
+          //  write(1,buffer,strlen(buffer));
             i +=2;
           }
            // printf("%s \n", buffer);
