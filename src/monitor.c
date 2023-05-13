@@ -23,21 +23,21 @@ int Server_parser (char *message, struct MSG *store){
           if(i == 0){
             store->pedido = token[0];
           }
-          else if(i == 2){
+          else if(i == 1){
              store->pid = atoi(token);
           }
-         else if(i == 4) {
+         else if(i == 2) {
                free(store->programName);
             store->programName = strdup(token);
-          }else if(i == 6){
+          }else if(i == 3){
             sscanf(token, "%ld.%06ld", &store->time.tv_sec, &store->time.tv_usec);
-          }else if(i == 7){
+          }else if(i == 4){
             store->max_size=100;
             store->arguments= malloc(100 * sizeof(int));
             store->current_index=0;
             store->arguments[store->current_index] = atoi(&token[4]);
             store->current_index++;
-          }else if(i > 7){
+          }else if(i > 4){
             char loop_count = 0;
             while(store->current_index > store->max_size){
                 if(loop_count > 10) exit(10);

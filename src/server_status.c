@@ -82,10 +82,10 @@ void upDateTable(Log *log, struct MSG entry, char *directory){
 struct String *Status_to_string(Entry entry, double time)
 {
    struct String *result = malloc(sizeof(struct String));
-    result->lenght = snprintf(NULL, 0, "PID: %d NAME: %s TIME: %lf \n", entry.pid, entry.program_name, time) + 1;
+    result->lenght = snprintf(NULL, 0, "%d %s %lf \n", entry.pid, entry.program_name, time) + 1;
    result->content = malloc(result->lenght);
    if(result->content == NULL) return NULL;
-   snprintf(result->content, result->lenght, "PID: %d NAME: %s TIME: %lf \n", entry.pid, entry.program_name, time);
+   snprintf(result->content, result->lenght, "%d %s %lf \n", entry.pid, entry.program_name, time);
    return result;
 }
 

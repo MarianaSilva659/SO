@@ -77,11 +77,11 @@ char***Pipeline_Parser(char *message, int *tollerance, int *arg){
 struct String *to_String(struct Info info, struct timeval time, char* arguments)
 {
     struct String *result = malloc(sizeof(struct String));
-    result->lenght = snprintf(NULL, 0, "%c PID: %d NAME: %s TIME: %ld.%06ld %s\n", info.pedido ,info.pid, info.programName, time.tv_sec, time.tv_usec, arguments) + 1;
+    result->lenght = snprintf(NULL, 0, "%c %d %s %ld.%06ld %s\n", info.pedido ,info.pid, info.programName, time.tv_sec, time.tv_usec, arguments) + 1;
     result->content = malloc(result->lenght);
 
     if(result->content == NULL) return NULL;
-    snprintf(result->content, result->lenght, "%c PID: %d NAME: %s TIME: %ld.%06ld %s\n", info.pedido ,info.pid, info.programName, time.tv_sec, time.tv_usec, arguments);
+    snprintf(result->content, result->lenght, "%c %d %s %ld.%06ld %s\n", info.pedido ,info.pid, info.programName, time.tv_sec, time.tv_usec, arguments);
     return result;
 }
 
